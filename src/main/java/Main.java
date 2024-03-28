@@ -18,16 +18,14 @@ public class Main {
         WebElement searchInput = driver.findElement(By.xpath("//input[@id='searchInput']"));
         WebElement searchButton = driver.findElement(By.xpath("//input[@id='searchButton']"));
 
-        searchInput.sendKeys("hi");
-        try {
-            WebElement suggestions = (new WebDriverWait(driver, Duration.ofSeconds(10))
-                    .until(ExpectedConditions.visibilityOfElementLocated(By
-                            .xpath("//div[@class='suggestions']"))));
-            for (WebElement suggestion : suggestions.findElements(By.className("mw-searchSuggest-link"))) {
-                System.out.println(suggestion.getText());
+        String[] queries = new String[]{"Ленин", "Сталин", "Кузнецов", "Лермонтов"};
+        for (String query : queries) {
+            StringBuilder by_symbol = new StringBuilder();
+            for (int i = 0; i < query.length(); i++) {
+                by_symbol.append(query.charAt(i));
+                findSuggestions(driver, searchInput, by_symbol);
             }
-        } catch (Exception RuntimeException) {
-            System.out.println("No suggestions found");
+//            findSuggestions(driver, searchInput, query);
         }
 
         // going to the URL
@@ -36,4 +34,20 @@ public class Main {
         driver.quit();
     }
 
+    private static void findSuggestions(WebDriver driver, WebElement searchInput, StringBuilder query) {
+//        String xpath = "//div[@class='suggestions-results']//a[@class='mw-searchSuggest-link']";
+        searchInput.sendKeys(query);
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebElement suggestions = wait.until(ExpectedConditions.elementToBeClickable(By
+                            .xpath("//div[@class='suggestions']")));
+            for (WebElement suggestion : suggestions.findElements(By.className("mw-searchSuggest-link"))) {
+                System.out.println(suggestion.getText());
+            }
+        } catch (Exception RuntimeException) {
+            System.out.println("No suggestions found for '" + query + "'");
+        }
+        searchInput.clear();
+    }
 }
+

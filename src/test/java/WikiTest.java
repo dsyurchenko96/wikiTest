@@ -21,11 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class WikiTest {
 
     private static WebDriver driver;
+    public static WikiPage homePage;
 
     @BeforeAll
     public static void setup() {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
+        homePage = PageFactory.initElements(driver, WikiPage.class);
     }
 
     @AfterAll
@@ -42,8 +44,13 @@ public class WikiTest {
     }
 
     @Test
-    public void testEmptyHighlights() {
+    public void testInvalidHighlights() {
         runTestHighlights(new String[]{"", "[", "}", "){(}", "<"}, false);
+    }
+
+    @Test
+    public void testNoHighlights() {
+        runTestHighlights(new String[]{"fgd", "koxwe", "ащм"}, false);
     }
 
     @Test
@@ -52,23 +59,27 @@ public class WikiTest {
     }
 
     @Test
-    public void testWebElementList() {
-        WikiPage homePage = PageFactory.initElements(driver, WikiPage.class);
-        List<WebElement> suggestions = homePage.getSuggestions("");
-        assertTrue(suggestions.isEmpty());
+    public void testGoToFirstExactSuggestion() {
+        runTestSuggestions(new String[]{
+                "Пушкин, Александр Сергеевич",
+                "Толстой, Лев Николаевич",
+                "Чехов, Антон Павлович",
+                "Лермонтов, Михаил Юрьевич"
+        }, false);
+    }
 
-        suggestions = homePage.getSuggestions("о");
-        for (WebElement suggestion : suggestions) {
-            System.out.println(suggestion.getText());
-        }
-        ArrayList<String> highlights = homePage.getHighlights("о");
-        for (String highlight : highlights) {
-            System.out.println(highlight);
-        }
+
+    @Test
+    public void testInvalidGoToSpecialSearch() {
+        runTestSuggestions(new String[]{"Иванннннн", "gjfodogji", "0489571098346", "[];,-)(*&^%$@!@#"}, true);
+    }
+
+    @Test
+    public void testValidGoToSpecialSearch() {
+        runTestSuggestions(new String[]{"VK", "Одноклассники", "Толстой"}, true);
     }
 
     private void runTestHighlights(String[] queries, boolean valid) {
-        WikiPage homePage = PageFactory.initElements(driver, WikiPage.class);
         for (String query : queries) {
             List<String> highlights = homePage.getHighlights(query);
             if (valid) {
@@ -80,4 +91,19 @@ public class WikiTest {
             }
         }
     }
+
+    private void runTestSuggestions(String[] queries, boolean specialSearch) {
+        String searchPageStart = "https://ru.wikipedia.org/w/index.php?fulltext=1&search=";
+        String searchPageEnd = "&title=Служебная:Поиск&ns0=1";
+        for (String query: queries) {
+            String url = homePage.getSuggestionLink(query, specialSearch);
+            if (!specialSearch) {
+                assertEquals(query, homePage.decodeLastPartOfUrl(url));
+            } else {
+                assertEquals(searchPageStart + query + searchPageEnd, homePage.decodeUrl(url));
+            }
+        }
+        homePage.goHome();
+    }
+
 }

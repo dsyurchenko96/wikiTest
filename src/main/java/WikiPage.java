@@ -19,7 +19,7 @@ public class WikiPage {
     @FindBy(xpath = "//input[@id='searchButton']")
     public WebElement searchButton;
 
-    private final By suggestPath = By.xpath("//a[@class='mw-searchSuggest-link']");
+    private final By suggestPath = By.xpath("//div[@class='suggestions-results']//a[@class='mw-searchSuggest-link']");
     private final By highlightPath = By.xpath("//span[@class='highlight']");
 
     public WikiPage(WebDriver driver) {
@@ -49,22 +49,6 @@ public class WikiPage {
                 }
             }
         }
-
-//        String xpath = "//span[@class='highlight']";
-//        searchInput.sendKeys(query);
-//        try {
-//            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
-//            List <WebElement> suggestions = wait.until(ExpectedConditions
-//                    .visibilityOfAllElementsLocatedBy(By.xpath(xpath)));
-//            for (WebElement suggestion : suggestions) {
-//                String highlight = suggestion.getText();
-//                if (!highlight.isEmpty()) {
-//                    highlights.add(highlight);
-//                }
-//            }
-//        } catch (NoSuchElementException | TimeoutException e) {
-//            highlights.clear();
-//        }
         searchInput.clear();
         return highlights;
     }

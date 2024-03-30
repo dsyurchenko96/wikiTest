@@ -1,17 +1,10 @@
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.PageFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -97,13 +90,12 @@ public class WikiTest {
         String searchPageEnd = "&title=Служебная:Поиск&ns0=1";
         for (String query: queries) {
             String url = homePage.getSuggestionLink(query, specialSearch);
-            if (!specialSearch) {
-                assertEquals(query, homePage.decodeLastPartOfUrl(url));
-            } else {
+            if (specialSearch) {
                 assertEquals(searchPageStart + query + searchPageEnd, homePage.decodeUrl(url));
+            } else {
+                assertEquals(query, homePage.decodeLastPartOfUrl(url));
             }
         }
         homePage.goHome();
     }
-
 }

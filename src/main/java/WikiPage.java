@@ -3,7 +3,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.FindBy;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -16,14 +15,11 @@ public class WikiPage {
     private final String homeUrl = "https://ru.wikipedia.org/";
     @FindBy(xpath = "//input[@id='searchInput']")
     public WebElement searchInput;
-    @FindBy(xpath = "//input[@id='searchButton']")
-    public WebElement searchButton;
 
 
     private final By suggestPath =
             By.xpath("//a[@class='mw-searchSuggest-link']");
     private final By highlightPath = By.xpath("//span[@class='highlight']");
-    private final By specialSuggestPath = By.xpath("/../following-sibling::a");
 
     public WikiPage(WebDriver driver) {
         this.driver = driver;
@@ -34,14 +30,29 @@ public class WikiPage {
         driver.navigate().to(homeUrl);
     }
 
+    public void typeQuery(String query) {
+        String[] keys = new String[]{query, " ", String.valueOf(Keys.BACK_SPACE)};
+        for (String key : keys) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted execution of the thread");
+            }
+            searchInput.sendKeys(key);
+        }
+    }
+
     public List<WebElement> getSuggestions(String query) {
-        searchInput.sendKeys(query);
+        if (query.isEmpty()) {
+            return new ArrayList<>();
+        }
+        typeQuery(query);
         try {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
             return wait.until(ExpectedConditions
                     .visibilityOfAllElementsLocatedBy(suggestPath));
         } catch (NoSuchElementException | TimeoutException e) {
-            return new ArrayList<WebElement>();
+            return new ArrayList<>();
         }
     }
 
@@ -64,19 +75,21 @@ public class WikiPage {
 
     public String getSuggestionLink(String query, boolean specialSearch) {
         List<WebElement> suggestions = getSuggestions(query);
+        String url;
         if (!suggestions.isEmpty()) {
             if (!specialSearch) {
                 suggestions.getFirst().click();
             } else {
                 suggestions.getLast().click();
             }
+            url = driver.getCurrentUrl();
         } else {
-            System.out.println("NOTHING FOUND!!!!");
+            url = null;
         }
-        String url = driver.getCurrentUrl();
         searchInput.clear();
         return url;
     }
+
 
     public String decodeUrl(String url) {
         return URLDecoder.decode(url, StandardCharsets.UTF_8).replace('_', ' ');

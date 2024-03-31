@@ -11,7 +11,7 @@ import java.util.List;
 
 
 public class WikiPage {
-    private final WebDriver driver;
+    public final WebDriver driver;
     private final String homeUrl = "https://ru.wikipedia.org/";
     @FindBy(xpath = "//input[@id='searchInput']")
     public WebElement searchInput;
@@ -30,6 +30,13 @@ public class WikiPage {
         driver.navigate().to(homeUrl);
     }
 
+    /**
+     * Types the given query into the search input field, adding a space and backspace
+     * to evoke all possible suggestions, including the special suggestion link.
+     * Sleeps for 100 milliseconds between each key event to simulate human typing.
+     *
+     * @param  query  The query to be typed into the search input field
+     */
     public void typeQuery(String query) {
         String[] keys = new String[]{query, " ", String.valueOf(Keys.BACK_SPACE)};
         for (String key : keys) {
@@ -42,6 +49,12 @@ public class WikiPage {
         }
     }
 
+    /**
+     * Retrieves a list of suggestions based on the given query.
+     *
+     * @param  query  the query string used to search for suggestions
+     * @return        a list of WebElement objects representing the suggestions
+     */
     public List<WebElement> getSuggestions(String query) {
         if (query.isEmpty()) {
             return new ArrayList<>();
@@ -56,6 +69,12 @@ public class WikiPage {
         }
     }
 
+    /**
+     * Retrieves a list of highlighted suggestions based on a given query.
+     *
+     * @param  query  the search query to retrieve highlights for
+     * @return        an ArrayList of strings containing the highlights
+     */
     public ArrayList<String> getHighlights(String query) {
         ArrayList<String> highlights = new ArrayList<>();
         List<WebElement> suggestions = getSuggestions(query);
@@ -73,6 +92,16 @@ public class WikiPage {
         return highlights;
     }
 
+    /**
+     * Clicks on the suggestion link if it exists and returns the URL.
+     * Whether the first or the last suggestion is clicked is determined
+     * by the specialSearch parameter. null is returned if no suggestions
+     * are found at all.
+     *
+     * @param  query         the search query to retrieve suggestions for
+     * @param  specialSearch identifies whether the query is a special search
+     * @return               the URL of the clicked suggestion
+     */
     public String getSuggestionLink(String query, boolean specialSearch) {
         List<WebElement> suggestions = getSuggestions(query);
         String url;
@@ -90,11 +119,24 @@ public class WikiPage {
         return url;
     }
 
-
+    /**
+     * Decodes a URL by using UTF-8 encoding and
+     * replacing any underscores with spaces to be used later
+     * for comparison with the original query.
+     *
+     * @param  url  the URL to be decoded
+     * @return      the decoded URL
+     */
     public String decodeUrl(String url) {
         return URLDecoder.decode(url, StandardCharsets.UTF_8).replace('_', ' ');
     }
 
+    /**
+     * Finds the last part of the URL and decodes it.
+     *
+     * @param   url  the URL the last part of which should be decoded
+     * @return       the decoded last part of the URL
+     */
     public String decodeLastPartOfUrl(String url) {
         String lastPartOfUrl = url.substring(url.lastIndexOf("/") + 1);
         return decodeUrl(lastPartOfUrl);

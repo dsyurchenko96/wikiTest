@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WikiTest {
 
-    private static WebDriver driver;
+    public static WebDriver driver;
     public static WikiPage homePage;
 
     @BeforeAll
@@ -31,26 +31,46 @@ public class WikiTest {
     }
 
 
+    /**
+     * Tests the highlighting of search results
+     * for the given valid queries that have highlights.
+     */
     @Test
     public void testValidHighlights() {
         runTestHighlights(new String[]{"пушкин", "ТОЛСТОЙ", "ЧеХоВ", "Лермонтов"}, true);
     }
 
+    /**
+     * Tests not having any highlights with the given invalid queries
+     * that don't have any suggestions at all.
+     */
     @Test
-    public void testInvalidHighlights() {
+    public void testNoHighlightsWithoutSuggestions() {
         runTestHighlights(new String[]{"", "[", "}", "){(}", "<"}, false);
     }
 
+    /**
+     * Tests not having any highlights with the given invalid queries
+     * that have at least one suggestion.
+     */
     @Test
-    public void testNoHighlights() {
+    public void testNoHighlightsWithSuggestions() {
         runTestHighlights(new String[]{"fgd", "koxwe", "ащм"}, false);
     }
 
+    /**
+     * Tests the highlighting of search results for the given valid queries
+     * with Latin characters and special symbols.
+     */
     @Test
     public void testLatinAndSymbolHighlights() {
         runTestHighlights(new String[]{"///", ".NET", "/etc/passwd", "VK Музыка"}, true);
     }
 
+    /**
+     * Tests the exact match of the query and the last part of the URL
+     * going to the first highlighted suggestion.
+     */
     @Test
     public void testGoToFirstExactSuggestion() {
         runTestSuggestions(new String[]{
@@ -61,17 +81,30 @@ public class WikiTest {
         }, false);
     }
 
-
+    /**
+     * Tests going to the special search page for the given queries
+     * that don't have any suggestions.
+     */
     @Test
     public void testInvalidGoToSpecialSearch() {
         runTestSuggestions(new String[]{"Иванннннн", "gjfodogji", "0489571098346", "[];,-)(*&^%$@!@#"}, true);
     }
 
+    /**
+     * Tests going to the special search page for the given queries
+     * that have at least one suggestion and can be disambiguated.
+     */
     @Test
     public void testValidGoToSpecialSearch() {
         runTestSuggestions(new String[]{"VK", "Одноклассники", "Толстой"}, true);
     }
 
+    /**
+     * Runs a test for the highlights of a given set of queries.
+     *
+     * @param  queries  an array of queries to test the highlights
+     * @param  valid    a boolean indicating whether the highlights should be valid or empty
+     */
     private void runTestHighlights(String[] queries, boolean valid) {
         for (String query : queries) {
             List<String> highlights = homePage.getHighlights(query);
@@ -85,6 +118,12 @@ public class WikiTest {
         }
     }
 
+    /**
+     * Runs a test for suggestions based on the given queries.
+     *
+     * @param  queries       an array of queries to search for suggestions
+     * @param  specialSearch a boolean indicating whether to use special search or not
+     */
     private void runTestSuggestions(String[] queries, boolean specialSearch) {
         String searchPageStart = "https://ru.wikipedia.org/w/index.php?fulltext=1&search=";
         String searchPageEnd = "&title=Служебная:Поиск&ns0=1";

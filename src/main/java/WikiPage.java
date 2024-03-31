@@ -41,7 +41,7 @@ public class WikiPage {
         String[] keys = new String[]{query, " ", String.valueOf(Keys.BACK_SPACE)};
         for (String key : keys) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(150);
             } catch (InterruptedException e) {
                 System.out.println("Interrupted execution of the thread");
             }
@@ -128,6 +128,9 @@ public class WikiPage {
      * @return      the decoded URL
      */
     public String decodeUrl(String url) {
+        if (url == null) {
+            return null;
+        }
         return URLDecoder.decode(url, StandardCharsets.UTF_8).replace('_', ' ');
     }
 
